@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo,node.js," />
+  <meta name="keywords" content="大数据,Flink," />
 
 
 
@@ -80,14 +80,14 @@
 
 
 <meta name="description" content="flink 简介 flink 是最近几年发展最为迅速的实时计算框架，它解决了 storm 低吞吐量的问题，同时也解决了 spark 的高延时问题。flink 是一款高吞吐量、低延时、高可用的流式计算框架。  flink 支持的窗口时间1231. 事件时间：EventTime，事件发生的事件，通常是用户行为发生的最准确的事件。  2. 注入时间：IngestionTime，事件注入到 flink 框">
-<meta name="keywords" content="Hexo,node.js">
+<meta name="keywords" content="大数据,Flink">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Flink 学习笔记 ——— WaterMark 水印">
-<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;2019&#x2F;11&#x2F;Flink-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E2%80%94%E2%80%94%E2%80%94-WaterMark-%E6%B0%B4%E5%8D%B0&#x2F;index.html">
+<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;blog&#x2F;Flink-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E2%80%94%E2%80%94%E2%80%94-WaterMark-%E6%B0%B4%E5%8D%B0.html">
 <meta property="og:site_name" content="Chris&#96;s Blog">
 <meta property="og:description" content="flink 简介 flink 是最近几年发展最为迅速的实时计算框架，它解决了 storm 低吞吐量的问题，同时也解决了 spark 的高延时问题。flink 是一款高吞吐量、低延时、高可用的流式计算框架。  flink 支持的窗口时间1231. 事件时间：EventTime，事件发生的事件，通常是用户行为发生的最准确的事件。  2. 注入时间：IngestionTime，事件注入到 flink 框">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-15T03:19:54.970Z">
+<meta property="og:updated_time" content="2019-11-15T07:58:34.603Z">
 <meta name="twitter:card" content="summary">
 
 
@@ -118,7 +118,7 @@
 
 
 
-  <link rel="canonical" href="http://chris-liu.xyz/2019/11/Flink-学习笔记-———-WaterMark-水印/"/>
+  <link rel="canonical" href="http://chris-liu.xyz/blog/Flink-学习笔记-———-WaterMark-水印.html"/>
 
 
 
@@ -180,29 +180,19 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/%20" rel="section">
+          <a href="/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
             首页
           </a>
         </li>
       
         
-        <li class="menu-item menu-item-about">
-          <a href="/about/%20" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
-            
-            关于
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-tags">
-          <a href="/tags/%20" rel="section">
+          <a href="/tags/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
             标签
           </a>
@@ -210,9 +200,9 @@
       
         
         <li class="menu-item menu-item-categories">
-          <a href="/categories/%20" rel="section">
+          <a href="/categories/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
             分类
           </a>
@@ -220,11 +210,21 @@
       
         
         <li class="menu-item menu-item-archives">
-          <a href="/archives/%20" rel="section">
+          <a href="/archives/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
             
             归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
           </a>
         </li>
       
@@ -353,7 +353,7 @@
             
               <div class="site-state-item site-state-posts">
               
-                <a href="/archives/%20%7C%7C%20archive">
+                <a href="/archives/">
               
                   <span class="site-state-item-count">1</span>
                   <span class="site-state-item-name">日志</span>
@@ -362,15 +362,24 @@
             
 
             
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
 
             
               
               
               <div class="site-state-item site-state-tags">
-                
+                <a href="/tags/index.html">
                   <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">标签</span>
-                
+                </a>
               </div>
             
 
@@ -384,6 +393,20 @@
           
 
           
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/b658ebdd6b99" title="简书" target="_blank">简书</a>
+                  </li>
+                
+              </ul>
+            </div>
           
 
           
