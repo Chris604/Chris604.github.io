@@ -90,9 +90,7 @@
         <h4 id="flink-简介"><a href="#flink-简介" class="headerlink" title="flink 简介"></a>flink 简介</h4><ul>
 <li>flink 是最近几年发展最为迅速的实时计算框架，它解决了 storm 低吞吐量的问题，同时也解决了 spark 的高延时问题。flink 是一款高吞吐量、低延时、高可用的流式计算框架。</li>
 </ul>
-<h4 id="flink-支持的窗口时间"><a href="#flink-支持的窗口时间" class="headerlink" title="flink 支持的窗口时间"></a>flink 支持的窗口时间</h4><blockquote>
-<p>事件时间：EventTime，事件发生的事件，通常是用户行为发生的最准确的事件。<br>注入时间：IngestionTime，事件注入到 flink 框架的事件，是在 source 算子执行的时候生成的事件，通常是在 jobManager 服务器的系统时间。<br>处理时间：ProcessTime，事件处理的时间，通常是在 transform 过程中生成的时间戳，在 taskmanager 机器生成。  </p>
-</blockquote>
+<h4 id="flink-支持的窗口时间"><a href="#flink-支持的窗口时间" class="headerlink" title="flink 支持的窗口时间"></a>flink 支持的窗口时间</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 事件时间：EventTime，事件发生的事件，通常是用户行为发生的最准确的事件。  </span><br><span class="line">2. 注入时间：IngestionTime，事件注入到 flink 框架的事件，是在 source 算子执行的时候生成的事件，通常是在 jobManager 服务器的系统时间。  </span><br><span class="line">3. 处理时间：ProcessTime，事件处理的时间，通常是在 transform 过程中生成的时间戳，在 taskmanager 机器生成。</span><br></pre></td></tr></table></figure>
 <ul>
 <li>为了更准确的反应用户行为分析结果，通常采用 EventTime 作为数据处理的的时间戳。然而，网络问题或者其他问题可能会引起数据的延时到来，如果按照 EventTime 去做处理，很可能得不到我们预期的结果，为了解决这种数据延时的问题，flink 中引入了 Watermark 水印去处理这种特殊情况。</li>
 </ul>
@@ -115,7 +113,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://chris-liu.xyz/uncategorized/Flink-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E2%80%94%E2%80%94%E2%80%94-WaterMark-%E6%B0%B4%E5%8D%B0" data-id="ck2yzb7pg0000xz22h9eu07y8" class="article-share-link">Share</a>
+      <a data-url="http://chris-liu.xyz/uncategorized/Flink-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E2%80%94%E2%80%94%E2%80%94-WaterMark-%E6%B0%B4%E5%8D%B0" data-id="ck2zhvder00002wu76z4w0bsd" class="article-share-link">Share</a>
       
       
     </footer>
