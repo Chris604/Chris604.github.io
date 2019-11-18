@@ -70,7 +70,7 @@
 
 
 
-  <meta name="keywords" content="大数据, 数据仓库, 实时计算, Flink, Hive" />
+  <meta name="keywords" content="大数据,Flink," />
 
 
 
@@ -81,15 +81,21 @@
 
 
 
-<meta name="description" content="这里是学习的沉淀地，小白的蓄水池…">
-<meta property="og:type" content="website">
-<meta property="og:title" content="关于">
-<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;about&#x2F;index.html">
+<meta name="description" content="Apache flink 简介&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Apache flink 是分布式流式数据处理框架，主要用于有界和无界数据流的有状态处理，具有高性能、高吞吐、高容灾等特性。 何为有界和无界数据流 有界流：数据有明确的开始和结束，在数据处理的时候可以进行统一的批量处理。 无界流：可以想象成水管，有数据流的开始，未定义数据流的结束。因此，数据需要进行实时的处理，不可能等到">
+<meta name="keywords" content="大数据,Flink">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 学习笔记 — 初识 flink">
+<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;Flink-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E2%80%94-%E5%88%9D%E8%AF%86-flink.html">
 <meta property="og:site_name" content="Chris&#96;s Blog">
-<meta property="og:description" content="这里是学习的沉淀地，小白的蓄水池…">
+<meta property="og:description" content="Apache flink 简介&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Apache flink 是分布式流式数据处理框架，主要用于有界和无界数据流的有状态处理，具有高性能、高吞吐、高容灾等特性。 何为有界和无界数据流 有界流：数据有明确的开始和结束，在数据处理的时候可以进行统一的批量处理。 无界流：可以想象成水管，有数据流的开始，未定义数据流的结束。因此，数据需要进行实时的处理，不可能等到">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-11-15T08:37:27.058Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记初识flink&#x2F;flink有界流.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记初识flink&#x2F;flink简单架构图.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记初识flink&#x2F;flinkweb界面.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记初识flink&#x2F;flink任务执行图.jpg">
+<meta property="og:updated_time" content="2019-11-18T10:26:22.897Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记初识flink&#x2F;flink有界流.jpg">
 
 
 
@@ -119,13 +125,13 @@
 
 
 
-  <link rel="canonical" href="http://chris-liu.cn/about/"/>
+  <link rel="canonical" href="http://chris-liu.cn/Flink-学习笔记-—-初识-flink.html"/>
 
 
 
 
 
-  <title>关于 | Chris`s Blog</title>
+  <title>Flink 学习笔记 — 初识 flink | Chris`s Blog</title>
   
 
 
@@ -255,7 +261,7 @@
     <div class="post-block page">
       <header class="post-header">
 
-	<h1 class="post-title" itemprop="name headline">关于</h1>
+	<h1 class="post-title" itemprop="name headline">Flink 学习笔记 — 初识 flink</h1>
 
 
 
@@ -267,9 +273,58 @@
       <div class="post-body">
         
         
-          <ul>
-<li>这里是学习的沉淀地，小白的蓄水池…</li>
+          <h3 id="Apache-flink-简介"><a href="#Apache-flink-简介" class="headerlink" title="Apache flink 简介"></a>Apache flink 简介</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;Apache flink 是分布式流式数据处理框架，主要用于有界和无界数据流的有状态处理，具有高性能、高吞吐、高容灾等特性。</p>
+<h4 id="何为有界和无界数据流"><a href="#何为有界和无界数据流" class="headerlink" title="何为有界和无界数据流"></a>何为有界和无界数据流</h4><ul>
+<li>有界流：数据有明确的开始和结束，在数据处理的时候可以进行统一的批量处理。</li>
+<li>无界流：可以想象成水管，有数据流的开始，未定义数据流的结束。因此，数据需要进行实时的处理，不可能等到所有的数据都到达之后才进行处理。</li>
 </ul>
+<img src="/images/Flink学习笔记初识flink/flink有界流.jpg" width = "500" height = "150" alt="据流图(引用 flink 官网)" align=center />
+<center>数据流图(引用 flink 官网)</center>
+
+<h5 id="何为状态"><a href="#何为状态" class="headerlink" title="何为状态"></a>何为状态</h5><ul>
+<li>状态是 flink 处理数据过程中所产生的中间可操作结果，可用于任务的恢复，flink 的checkpoint机制就是状态很有用的产物(checkpoint机制在后续会有深入介绍)。</li>
+</ul>
+<h3 id="flink-架构"><a href="#flink-架构" class="headerlink" title="flink 架构"></a>flink 架构</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;如下图是 flink 简单架构图解：<br><img src="/images/Flink学习笔记初识flink/flink简单架构图.png" width = "500" height = "350" alt="flink 简单架构图" align=center /></p>
+<center>flink 简单架构图</center>
+
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;由图中可以看到，在 flink 程序提交执行的过程中会涉及到3个部分，其中 JobManager 和 TaskManager 是运行的两个JVM进程：</p>
+<ul>
+<li>Cli：提交程序的客户端，我们的任务程序会通过 Cli 进行解析，然后提交给 JobManager 。同时，Cli 也是接收 JobMnager 结果的接收者。</li>
+<li>JobManager：它是 flink 的 master 进程，对 TaskManager进行资源管理，它接受 Cli 提交的任务流，然后根据 TaskManger 当前的资源使用情况进行任务的分配。同时，它与 TaskManger 时刻保持通信，监听 TaskManger 的健康状态。另外，JobManager 也是  保存 checkpoint 的地方。通常情况下，JobManager 会存在单点的问题，因此，需要考虑在此处做HA处理。</li>
+<li>TaskManger：它是 flink 的 worker 进程，在 TaskManager 启动时会分配相应的 slot 槽位，slot 是 flink 任务执行的最小单元，各个 slot 之间内存均分，cpu 共享。从 JobManager 发来的任务通常以 task 的形式在这里进行执行， 。在hdfs文件系统中，TaskManager 通常跟 DataNode 共存，以达到计算向数据移动的目的。</li>
+</ul>
+<h3 id="flink-部署使用"><a href="#flink-部署使用" class="headerlink" title="flink 部署使用"></a>flink 部署使用</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;flink 的部署方式有多种，主要有local 模式、standalone 模式、yarn 模式等等，这里主要通过 local 模式进行简单应用测试：</p>
+<h4 id="flink-下载安装"><a href="#flink-下载安装" class="headerlink" title="flink 下载安装"></a>flink 下载安装</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;flink local模式很简单(前提是已经安装了 JDK)，去官网<a href="https://www.apache.org/dyn/closer.lua/flink/flink-1.8.2/flink-1.8.2-bin-scala_2.11.tgz">下载</a> flink 安装包，然后进行解压：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf flink-1.8.2-bin-scala_2.11.tgz</span><br><span class="line">cd flink-1.8.2</span><br></pre></td></tr></table></figure>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 启动 flink，然后通过 jsp 进行验证，会看到 JobManager 进程(StandaloneSessionClusterEntrypoint)和 TaskManager 进程(TaskManagerRunner)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start-cluster.sh</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 下面我们可以登录本地的 flink web界面进行一些操作（地址：<a href="http://localhost:8081/），如下图：">http://localhost:8081/），如下图：</a></p>
+<img src="/images/Flink学习笔记初识flink/flinkweb界面.jpg" width = "700" height = "450" alt="flinkweb界面" align=center />
+<center>flink web界面图</center>
+
+<ul>
+<li>由图中可以看到，在本地模式下，flink 只有一个 TaskManager，每个 TaskManager 默认分配了一个槽位 slot。当然，这种方式只适用于本地的程序测试，在生成中，通常采用 standalone 模式或者 yarn 模式。</li>
+</ul>
+<h4 id="flink-任务提交"><a href="#flink-任务提交" class="headerlink" title="flink 任务提交"></a>flink 任务提交</h4><p>在本地模式下，flink 程序可以通过命令行进行任务提交，也可以通过 web 界面进行提交，</p>
+<ol>
+<li>命令行提交，这是 flink 自带的一个单词统计的例子：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cd flink-1.8.2</span><br><span class="line">./bin/flink run  /Users/liudi/app/flink-1.8.2/examples/batch/WordCount.jar</span><br><span class="line"></span><br><span class="line">Starting execution of program</span><br><span class="line">Executing WordCount example with default input data set.</span><br><span class="line">Use --input to specify file input.</span><br><span class="line">Printing result to stdout. Use --output to specify output path.</span><br><span class="line">(a,5)</span><br><span class="line">(action,1)</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>web 界面任务提交:</li>
+</ol>
+<ul>
+<li>在刚才展示的界面左侧栏里有一菜单 submit new job，然后 add new 即可添加任务成功。  </li>
+</ul>
+<img src="/images/Flink学习笔记初识flink/flink任务执行图.jpg" width = "700" height = "450" alt="flink任务执行图" align=center />
+<center>flink 任务执行图</center>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 通过web界面进行任务提交，我们可以清晰的观擦任务每一步的执行，而且任务的执行结果状态也可以清晰可见。</p>
+<p>Ok，通过上面两种方式可以进行任务的提交，这里我们使用了默认的配置信息。事实上，flink 在任务提交时可以进行多个参数的配置，适合我们进行 flink 的调优工作，这里就不多做介绍。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>&nbsp;&nbsp;&nbsp;&nbsp; 这里主要对 flink 做了一个简单的介绍，并对其安装、部署、启动，以及 flink 任务的提交做了简单操作，接下来会对 flink 慢慢进行深入的了解。当然，纯属于个人随记，有理解偏差的地方，还请不吝指正。</p>
 
         
       </div>
@@ -312,8 +367,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -391,6 +455,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Apache-flink-简介"><span class="nav-number">1.</span> <span class="nav-text">Apache flink 简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#何为有界和无界数据流"><span class="nav-number">1.1.</span> <span class="nav-text">何为有界和无界数据流</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#何为状态"><span class="nav-number">1.1.1.</span> <span class="nav-text">何为状态</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flink-架构"><span class="nav-number">2.</span> <span class="nav-text">flink 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#flink-部署使用"><span class="nav-number">3.</span> <span class="nav-text">flink 部署使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-下载安装"><span class="nav-number">3.1.</span> <span class="nav-text">flink 下载安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-任务提交"><span class="nav-number">3.2.</span> <span class="nav-text">flink 任务提交</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
