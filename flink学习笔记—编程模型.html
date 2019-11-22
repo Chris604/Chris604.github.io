@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+  <meta name="baidu-site-verification" content="IpFO2YmkVe" />
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="大数据,Flink,流式," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="flink 抽象分层结构&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;flink 作为流式处理框架，不仅具有高效的流数据和批数据处理性能，具有针对开发人员使用的高效的底层API，同时有方便分析人员使用的 table&#x2F;sql API。下图中可见，越上层的 API 使用越简单，但是本身的表达能力也越弱，越下层的 API 开发和学习成本越高，表达能力也越强。因此，flink API 可以适合不同层次的">
+<meta name="keywords" content="大数据,Flink,流式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 学习笔记 — flink 编程模型">
+<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;flink%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E2%80%94%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B.html">
+<meta property="og:site_name" content="Chris&#96;s Blog">
+<meta property="og:description" content="flink 抽象分层结构&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;flink 作为流式处理框架，不仅具有高效的流数据和批数据处理性能，具有针对开发人员使用的高效的底层API，同时有方便分析人员使用的 table&#x2F;sql API。下图中可见，越上层的 API 使用越简单，但是本身的表达能力也越弱，越下层的 API 开发和学习成本越高，表达能力也越强。因此，flink API 可以适合不同层次的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记编程模型&#x2F;flink分层架构图.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记编程模型&#x2F;flink-stream执行图.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记编程模型&#x2F;flink-stream并行计算流程图.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记编程模型&#x2F;flink-stream计算并行度.jpg">
+<meta property="og:updated_time" content="2019-11-22T08:32:55.625Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记编程模型&#x2F;flink分层架构图.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://chris-liu.xyz/flink学习笔记—编程模型.html"/>
+
+
+
+
+
+  <title>Flink 学习笔记 — flink 编程模型 | Chris`s Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Chris`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">这是一只飞不高的老鸟，但它从未放弃展翅飞翔...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">Flink 学习笔记 — flink 编程模型</h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+        
+        
+          <h4 id="flink-抽象分层结构"><a href="#flink-抽象分层结构" class="headerlink" title="flink 抽象分层结构"></a>flink 抽象分层结构</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;flink 作为流式处理框架，不仅具有高效的流数据和批数据处理性能，具有针对开发人员使用的高效的底层API，同时有方便分析人员使用的 table/sql API。下图中可见，越上层的 API 使用越简单，但是本身的表达能力也越弱，越下层的 API 开发和学习成本越高，表达能力也越强。因此，flink API 可以适合不同层次的使用人员快速上手。</p>
+<img src="/images/Flink学习笔记编程模型/flink分层架构图.png" width = "500" height = "150" alt="Flink API 分层结构图" align=center />
+<center>Flink API 分层结构图</center>
+
+<ul>
+<li>Process Function 是最底层的 API，对于开发人员来讲，它也是使用最为灵活的一层。它提供了丰富的接口给开发人员使用，在功能实现上更符合开发的要求。它可以嵌入到 DataStream API 中。这里可以实现复杂的计算。</li>
+<li>DataSet / DataStream API 是封装好的，其中 DataSet API 主要是为处理批量数据（bounded data）准备的，而DataStream API 是专为处理流式数据（unbounded data）而存在。事实上，这个阶段的 API 处理能够满足大部分的开发需求。因此，这里将主要对这层的 API 做详细的介绍。</li>
+<li>Flink提供的最高级抽象是SQL，可以使用类似关系型数据库的运算操作，主要为开发了解较少的分析人员使用。</li>
+</ul>
+<h4 id="DataStream-API-介绍"><a href="#DataStream-API-介绍" class="headerlink" title="DataStream API 介绍"></a>DataStream API 介绍</h4><h5 id="数据流执行概况"><a href="#数据流执行概况" class="headerlink" title="数据流执行概况"></a>数据流执行概况</h5><p>&nbsp;&nbsp;&nbsp;&nbsp;flink 中的流式数据是无边界（unbounded）的，在执行过程中，flink 程序本身主要是由数据流和算子共同组成。在整个过程中包括 source、transform、sink 三个部分。</p>
+<ul>
+<li>source：连接数据源，flink 中数据源主要包括：textFile、socket、kafka、flink 本身的 sink 等等。</li>
+<li>transform：转化算子，flink 中算子主要用于数据的逻辑处理，例如：FlatMap、Map、sum 等等。</li>
+<li>sink：连接数据落地，flink sink 决定将数据写入到哪里，主要包括：file、socket、kafka、mysql 等等。</li>
+</ul>
+<img src="/images/Flink学习笔记编程模型/flink-stream执行图.jpg" width = "600" height = "250" alt="Flink Stream 执行流程(摘自 flink 官网)" align=center />
+<center>Flink Stream 执行流程(摘自 flink 官网)</center>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;由上图可以发现，一个完整的 flink 程序，必须包括 source、transform、sink 三部分，并且在最后开启 execute 才能保证程序的正常执行。通常，transform 的一个算子和数据是一一对应关系，但是有时会把一些算子链在一起(chain在一起)，从而提高任务执行的性能。</p>
+<h5 id="数据流并行计算"><a href="#数据流并行计算" class="headerlink" title="数据流并行计算"></a>数据流并行计算</h5><p>&nbsp;&nbsp;&nbsp;&nbsp;我们知道，flink 程序是一个分布式的并行计算框架，因此，在 flink 程序执行的过程中，是并行计算的。这里引用 flink 官网上描述并行计算的流程图：</p>
+<img src="/images/Flink学习笔记编程模型/flink-stream并行计算流程图.jpg" width = "600" height = "250" alt="Flink Stream 并行计算流程图(摘自 flink 官网)" align=center />
+<center>Flink Stream 并行计算流程图(摘自 flink 官网)</center>
+
+<ul>
+<li>事实上，在此执行图中，除了 sink 算子的并行度（一个算子子任务的数量）为 1，其他算子的并行度均为 2。</li>
+<li>一对一流（例如，在上图中的Source和map（） 算子之间）保存数据元的分区和排序。这意味着map（） 算子的subtask [1] 将以与Source 算子的subtask [1]生成的顺序相同的顺序看到相同的数据元。</li>
+<li>重新分配流（在上面的map（）和keyBy / window之间，以及 keyBy / window和Sink之间）重新分配流。每个 算子子任务将数据发送到不同的目标子任务，具体取决于所选的转换。实例是 keyBy（） （其通过散列Keys重新分区），广播（） ，或Rebalance （） （其重新分区随机地）。在重新分配交换中，数据元之间的排序仅保存在每对发送和接收子任务中（例如，map（）的子任务[1] 和子任务[2]keyBy / window）。因此，在此示例中，保存了每个Keys内的排序，但并行性确实引入了关于不同Keys的聚合结果到达接收器的顺序的非确定性。</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;下面我们采用一个简单的单词统计的例子进行说明：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.common.functions.FlatMapFunction;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.java.tuple.Tuple2;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.datastream.DataStreamSource;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.streaming.api.windowing.time.Time;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.util.Collector;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NcWordCount</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化执行环境</span></span><br><span class="line">        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置计算并行度</span></span><br><span class="line">        env.setParallelism(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 连接 source</span></span><br><span class="line">        DataStreamSource&lt;String&gt; lines = env.socketTextStream(<span class="string">"localhost"</span>, <span class="number">9000</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 转换操作</span></span><br><span class="line">        SingleOutputStreamOperator&lt;Tuple2&lt;String, Integer&gt;&gt; r = lines.flatMap(<span class="keyword">new</span> TokenZer())</span><br><span class="line">                .keyBy(<span class="number">0</span>)</span><br><span class="line">                .timeWindow(Time.seconds(<span class="number">10</span>))</span><br><span class="line">                .sum(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// sink</span></span><br><span class="line">        <span class="comment">// r.writeAsText("out");</span></span><br><span class="line">        r.print();</span><br><span class="line">        env.execute(<span class="string">"test"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">TokenZer</span> <span class="keyword">implements</span> <span class="title">FlatMapFunction</span>&lt;<span class="title">String</span>, <span class="title">Tuple2</span>&lt;<span class="title">String</span>, <span class="title">Integer</span>&gt;&gt; </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">flatMap</span><span class="params">(String value, Collector&lt;Tuple2&lt;String, Integer&gt;&gt; out)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            String[] words = value.split(<span class="string">" "</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (String word:words) &#123;</span><br><span class="line">                out.collect(<span class="keyword">new</span> Tuple2&lt;String, Integer&gt;(word, <span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>这里使用 socket 数据源，因此我们在执行时需要在本地启动一个 socket 连接。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -l 9000</span><br></pre></td></tr></table></figure></li>
+<li>这里采用 sink 到控制台的方式进行测试，当然，我们可以调用 writeAsText() 函数，将我们的结果 sink 到文件中。</li>
+<li>实际上，flink 程序执行中可以通过 env.setParallelism() 来设置计算并行度，如果没有指定，那在程序执行过程中会根据所在的机器的核心数来确定执行并行度。而设置合理的计算并行度可以有效提升程序的计算性能，当然，计算并行度也要和本地资源做一个 balance。下图是默认并行度的执行结果，这里本地机器是 8 核心，因此在默认并行度下，计算结果 sink 到文件时，会生成 8 个文件。 当把并行度设置为 1 时(如代码)，最终会有一个结果文件。</li>
+</ul>
+<img src="/images/Flink学习笔记编程模型/flink-stream计算并行度.jpg" width = "600" height = "200" alt="计算并行度" align=center />
+
+<h4 id="DataSet-API-介绍"><a href="#DataSet-API-介绍" class="headerlink" title="DataSet API 介绍"></a>DataSet API 介绍</h4><p>&nbsp;&nbsp;&nbsp;&nbsp; 在了解了 DataStream API 的编程模式后，对 DataSet 能更快的上手。事实上，与 spark 相反，flink 流式计算中，以流式数据为主，批量数据处理是建立在流式处理的基础上。在编程过程中，DataSet API 的使用跟 DataStream API 的使用有着及其相似的流程。</p>
+<ul>
+<li>在初始化执行环境时，既可以使用 StreamExecutionEnvironment， 又可以使用 ExecutionEnvironment。</li>
+<li>执行过程中产生的数据集都是以 DataSet 的形式存在。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.common.functions.FlatMapFunction;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.java.DataSet;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.java.ExecutionEnvironment;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.java.operators.AggregateOperator;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.api.java.tuple.Tuple2;</span><br><span class="line"><span class="keyword">import</span> org.apache.flink.util.Collector;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WordCount</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 初始化环境</span></span><br><span class="line">        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line">        env.setParallelism(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 数据源</span></span><br><span class="line">        DataSet&lt;String&gt; dataSet = env.fromElements(<span class="string">"hello word spark java scala"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 做一次聚合操作</span></span><br><span class="line">        AggregateOperator&lt;Tuple2&lt;String, Integer&gt;&gt; sum = dataSet.flatMap(<span class="keyword">new</span> FlatMapFunction&lt;String, Tuple2&lt;String, Integer&gt;&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">flatMap</span><span class="params">(String values, Collector&lt;Tuple2&lt;String, Integer&gt;&gt; out)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                String[] value = values.split(<span class="string">" "</span>);</span><br><span class="line">                <span class="keyword">for</span> (String val : value) &#123;</span><br><span class="line">                    out.collect(<span class="keyword">new</span> Tuple2&lt;&gt;(val, <span class="number">1</span>));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).groupBy(<span class="number">0</span>)</span><br><span class="line">                .sum(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        count.print().setParallelism(3);</span></span><br><span class="line">        sum.print();</span><br><span class="line"></span><br><span class="line"><span class="comment">//        env.execute("flink-test");</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp; 需要注意的是，在使用批量处理时，执行程序时不需要执行 env.execute().</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>&nbsp;&nbsp;&nbsp;&nbsp; 本文主要对 flink 的编程模型(DataStream/DataSet API)进行了简单的介绍，当然，主要还是处于 API 的使用阶段，在后续的 flink 使用中会通过源码分析进行更详细的介绍。同时，在 Stream API 中，我们看到了 window 窗口的影子，窗口的使用是 flink 引擎中重要的一环，接下来也会有更详尽的描述。</p>
+
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Chris Liu" />
+            
+              <p class="site-author-name" itemprop="name">Chris Liu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/b658ebdd6b99" title="简书" target="_blank">简书</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-抽象分层结构"><span class="nav-number">1.</span> <span class="nav-text">flink 抽象分层结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DataStream-API-介绍"><span class="nav-number">2.</span> <span class="nav-text">DataStream API 介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据流执行概况"><span class="nav-number">2.1.</span> <span class="nav-text">数据流执行概况</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据流并行计算"><span class="nav-number">2.2.</span> <span class="nav-text">数据流并行计算</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DataSet-API-介绍"><span class="nav-number">3.</span> <span class="nav-text">DataSet API 介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Chris Liu</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
