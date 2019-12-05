@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+  <meta name="baidu-site-verification" content="IpFO2YmkVe" />
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="大数据,Flink,流式,窗口," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="flink 回顾&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;通过之前的了解，我们知道，flink是一个高吞吐、低延时的流式处理框架。flink 中具有严格的时间定义，采用不同的时间机制，对于其处理延时及处理结果的准确性都有重要的影响。而在不同的时间机制下，我们想要得到准确一致的结果，在 flink 中我们又能怎么处理呢？ flink 时间定义&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;事实">
+<meta name="keywords" content="大数据,Flink,流式,窗口">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 学习笔记 — 时间定义及窗口机制">
+<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;flink%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E2%80%94%E6%97%B6%E9%97%B4%E5%AE%9A%E4%B9%89%E5%8F%8A%E7%AA%97%E5%8F%A3%E6%9C%BA%E5%88%B6.html">
+<meta property="og:site_name" content="Chris&#96;s Blog">
+<meta property="og:description" content="flink 回顾&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;通过之前的了解，我们知道，flink是一个高吞吐、低延时的流式处理框架。flink 中具有严格的时间定义，采用不同的时间机制，对于其处理延时及处理结果的准确性都有重要的影响。而在不同的时间机制下，我们想要得到准确一致的结果，在 flink 中我们又能怎么处理呢？ flink 时间定义&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;事实">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记时间定义及窗口机制&#x2F;flink各时间触发时机图.jpg">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记时间定义及窗口机制&#x2F;各类型窗口图.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记时间定义及窗口机制&#x2F;时间窗口底层图.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记时间定义及窗口机制&#x2F;watermark.png">
+<meta property="og:updated_time" content="2019-12-05T10:10:27.677Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;chris-liu.xyz&#x2F;images&#x2F;Flink学习笔记时间定义及窗口机制&#x2F;flink各时间触发时机图.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://chris-liu.xyz/flink学习笔记—时间定义及窗口机制.html"/>
+
+
+
+
+
+  <title>Flink 学习笔记 — 时间定义及窗口机制 | Chris`s Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Chris`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">这是一只飞不高的老鸟，但它从未放弃展翅飞翔...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">Flink 学习笔记 — 时间定义及窗口机制</h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+        
+        
+          <h4 id="flink-回顾"><a href="#flink-回顾" class="headerlink" title="flink 回顾"></a>flink 回顾</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;通过之前的了解，我们知道，flink是一个高吞吐、低延时的流式处理框架。flink 中具有严格的时间定义，采用不同的时间机制，对于其处理延时及处理结果的准确性都有重要的影响。而在不同的时间机制下，我们想要得到准确一致的结果，在 flink 中我们又能怎么处理呢？</p>
+<h4 id="flink-时间定义"><a href="#flink-时间定义" class="headerlink" title="flink 时间定义"></a>flink 时间定义</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;事实上，flink 提供了三种不同的时间标的，分别是 Event Time（事件时间）、Ingestion Time（注入时间）、Processing Time（处理时间），下图给出了三种时间对应的发生时机：<br><img src="/images/Flink学习笔记时间定义及窗口机制/flink各时间触发时机图.jpg" width = "500" height = "150" alt="Flink 时间机制" align=center /></p>
+<center>Flink 各类时间触发时机</center>
+
+<ul>
+<li>Event Time：由上图可知，eventTime 是事件真正发生的时间，在事件发生时触发，此后事件事件会跟随数据流进入 flink 系统中，供处理使用。在 flink 系统中，我们可以使用该时间，当然，也可以使用其他的时间作为标准，这是由业务需求所决定。事实上，在整个数据流中，eventTime 并不是严格有序的，尤其是在我们处理分布式消息中间件（如：kafka）中的数据时，eventTime 一定会出现乱序的情况。因此在使用 eventTime 且想要得到有序的结果时，需要做好乱序数据的处理。在 flink 中，可有使用 watermark 机制进行解决。采用 eventTime 我们在进行多次重复计算时，可以得到完全一致的结果。</li>
+<li>Ingestion Time：我们可以理解为注入时间，它是时间流进入 flink 处理框架中的时机。通常情况下，我们以数据源 source 为数据进入系统中的起点，因此注入时间就是 source 算子发生时所在的机器的当前时间戳。这里我们并不需要考虑事件数据流是否有序的问题。</li>
+<li>Processing Time：事件处理事件，它是事件处理时，执行 task 所在的机器的当前时间戳。当我们使用 processing time 作为处理时间流的时间机制时，不需要考虑事件的乱序情况，只要考虑系统本身的事件就ok了。事实上，在使用 processing time 时，对与同一批数据进行多次计算时，得到的结果很可能不会一致。当然，如果我们的业务需求并不需要我们多次得到一致的结果时，采用 processing time 是最有效、快捷的方式。flink 本身默认的事件机制就是 processing time。</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在使用 flink 进行编码时，我们可以这样在代码中指定我们需要采用的时间方式，env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 指定时间</span></span><br><span class="line">        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);</span><br><span class="line"></span><br><span class="line">        DataStream&lt;String&gt; dataSource = env.socketTextStream(<span class="string">"localhost"</span>, <span class="number">9999</span>);</span><br><span class="line">        SingleOutputStreamOperator&lt;Tuple2&lt;String, Integer&gt;&gt; reduce = dataSource.map(<span class="keyword">new</span> MapFunction&lt;String, Tuple2&lt;String, Integer&gt;&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> Tuple2&lt;String, Integer&gt; <span class="title">map</span><span class="params">(String value)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                String[] values = value.split(<span class="string">" "</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Tuple2&lt;String, Integer&gt;(values[<span class="number">0</span>], <span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).keyBy(<span class="number">0</span>)</span><br><span class="line">          .reduce(<span class="keyword">new</span> ReduceFunction&lt;Tuple2&lt;String, Integer&gt;&gt;() &#123;</span><br><span class="line">              <span class="meta">@Override</span></span><br><span class="line">              <span class="function"><span class="keyword">public</span> Tuple2&lt;String, Integer&gt; <span class="title">reduce</span><span class="params">(Tuple2&lt;String, Integer&gt; value1, Tuple2&lt;String, Integer&gt; value2)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                  <span class="keyword">return</span> <span class="keyword">new</span> Tuple2&lt;&gt;(value1.f0, value1.f1 + value2.f1);</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;);</span><br><span class="line"></span><br><span class="line">        reduce.print();</span><br><span class="line">        env.execute(<span class="string">"test"</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;在常用的业务处理时，对于 Ingestion Time 和 Processing Time 的使用相对较少，因此接下来将对 Event Time 在个业务中的使用做详细的介绍。</p>
+<h4 id="flink-窗口机制"><a href="#flink-窗口机制" class="headerlink" title="flink 窗口机制"></a>flink 窗口机制</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;Flink 中窗口包括 count window 和 time window，而 time window 又分为 Tumbling Time Window、Sliding Time Window、Session Window 以及 Global Window<br><img src="/images/Flink学习笔记时间定义及窗口机制/各类型窗口图.png" width="600" height="450" alt="Flink窗口图" align=center /></p>
+<center>Flink 各类窗口图</center>
+
+<ul>
+<li>Count Window：计数窗口，根据窗口内数据的数量进行滚动进入下一个窗口。如上图中，我们以 2 为窗口大小，即每当窗口中的数据为 2 时进行一次计算，然后进入下一批次。在 api 中可以这么实现：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class TimeAndWindow &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String []args) throws Exception &#123;</span><br><span class="line">        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line">        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);</span><br><span class="line"></span><br><span class="line">        // 创建数据源</span><br><span class="line">        DataStream&lt;String&gt; dataStream = env.socketTextStream(&quot;localhost&quot;, 9999);</span><br><span class="line"></span><br><span class="line">        SingleOutputStreamOperator&lt;Tuple2&lt;String, Integer&gt;&gt; sum = dataStream.map(new MapFunction&lt;String, Tuple2&lt;String, Integer&gt;&gt;() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public Tuple2&lt;String, Integer&gt; map(String value) throws Exception &#123;</span><br><span class="line">                String[] values = value.split(&quot; &quot;);</span><br><span class="line">                return new Tuple2&lt;String, Integer&gt;(values[0], 1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).keyBy(0)</span><br><span class="line">          .countWindow(2)   // 使用count window</span><br><span class="line">          .sum(1);</span><br><span class="line"></span><br><span class="line">        sum.print();</span><br><span class="line"></span><br><span class="line">        env.execute(&quot;test&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Tumbling Time Window：译为滚动时间窗口，在使用 count window 时，跟我们所 set 的时间没有太大关系，但时当我们使用时间窗口时，根据不同的时间机制，需要对窗口有不同的操作。如下 flink 源码：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> WindowedStream&lt;T, KEY, TimeWindow&gt; <span class="title">timeWindow</span><span class="params">(Time size)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (environment.getStreamTimeCharacteristic() == TimeCharacteristic.ProcessingTime) &#123;</span><br><span class="line">			<span class="keyword">return</span> window(TumblingProcessingTimeWindows.of(size));</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> window(TumblingEventTimeWindows.of(size));</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;由下面源码我们可以看到，在使用 ProcessingTime 和 EventTime 时，flink 底层有不同的实现，结下来分别看一下两种实现的区别。可以看到使用 ProcessingTime 时，flink 内部会通过上下文获取当前时间戳进行处理，而在 EventTime 中，需要依赖事件中所携带的时间戳。因此，需要我们先 DataStream.assignTimestampsAndWatermarks(…) 进行时间分配，否则会抛出异常，而 ProcessingTime 无需调用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  ProcessingTime 机制 assignWindows 实现</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Collection&lt;TimeWindow&gt; <span class="title">assignWindows</span><span class="params">(Object element, <span class="keyword">long</span> timestamp, WindowAssignerContext context)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">final</span> <span class="keyword">long</span> now = context.getCurrentProcessingTime();</span><br><span class="line">	<span class="keyword">long</span> start = TimeWindow.getWindowStartWithOffset(now, offset, size);</span><br><span class="line">	<span class="keyword">return</span> Collections.singletonList(<span class="keyword">new</span> TimeWindow(start, start + size));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//  EventTime 机制 assignWindows 实现</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Collection&lt;TimeWindow&gt; <span class="title">assignWindows</span><span class="params">(Object element, <span class="keyword">long</span> timestamp, WindowAssignerContext context)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (timestamp &gt; Long.MIN_VALUE) &#123;</span><br><span class="line">		<span class="comment">// Long.MIN_VALUE is currently assigned when no timestamp is present</span></span><br><span class="line">		<span class="keyword">long</span> start = TimeWindow.getWindowStartWithOffset(timestamp, offset, size);</span><br><span class="line">		<span class="keyword">return</span> Collections.singletonList(<span class="keyword">new</span> TimeWindow(start, start + size));</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Record has Long.MIN_VALUE timestamp (= no timestamp marker). "</span> +</span><br><span class="line">				<span class="string">"Is the time characteristic set to 'ProcessingTime', or did you forget to call "</span> +</span><br><span class="line">				<span class="string">"'DataStream.assignTimestampsAndWatermarks(...)'?"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;下图描述了 Flink 的窗口机制以及各组件之间是如何相互工作的。由数据源流入的每条数据，会由 WindowAssigner 分配到对应的 Window，当 Window 被触发之后，会交给 Evictor（如果没有设置 Evictor 则跳过），然后处理 UserFunction。<br><img src="/images/Flink学习笔记时间定义及窗口机制/时间窗口底层图.png" width="600" height="450" alt="Flink时间窗口机制" align=center /></p>
+<ul>
+<li>Sliding Time Window：滑动窗口，此时触发的 timeWindow 需要传入两个参数: timeWindow(Time.milliseconds(2), Time.milliseconds(2))，其中第一个参数为窗口的大小，第二个参数为窗口滑动的步长。事实上，由源码可以看到，在使用滚动窗口时，flink 内部会为窗口默认一个 offset = 0，而在滑动窗口时显示指定 offset：  </li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Creates a new &#123;<span class="doctag">@code</span> TumblingEventTimeWindows&#125; &#123;<span class="doctag">@link</span> WindowAssigner&#125; that assigns</span></span><br><span class="line"><span class="comment">	 * elements to time windows based on the element timestamp.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> size The size of the generated windows.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> The time policy.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> TumblingEventTimeWindows <span class="title">of</span><span class="params">(Time size)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> TumblingEventTimeWindows(size.toMilliseconds(), <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Creates a new &#123;<span class="doctag">@code</span> TumblingEventTimeWindows&#125; &#123;<span class="doctag">@link</span> WindowAssigner&#125; that assigns</span></span><br><span class="line"><span class="comment">	 * elements to time windows based on the element timestamp and offset.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;For example, if you want window a stream by hour,but window begins at the 15th minutes</span></span><br><span class="line"><span class="comment">	 * of each hour, you can use &#123;<span class="doctag">@code</span> of(Time.hours(1),Time.minutes(15))&#125;,then you will get</span></span><br><span class="line"><span class="comment">	 * time windows start at 0:15:00,1:15:00,2:15:00,etc.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;Rather than that,if you are living in somewhere which is not using UTC±00:00 time,</span></span><br><span class="line"><span class="comment">	 * such as China which is using UTC+08:00,and you want a time window with size of one day,</span></span><br><span class="line"><span class="comment">	 * and window begins at every 00:00:00 of local time,you may use &#123;<span class="doctag">@code</span> of(Time.days(1),Time.hours(-8))&#125;.</span></span><br><span class="line"><span class="comment">	 * The parameter of offset is &#123;<span class="doctag">@code</span> Time.hours(-8))&#125; since UTC+08:00 is 8 hours earlier than UTC time.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> size The size of the generated windows.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> offset The offset which window start would be shifted by.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> The time policy.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> TumblingEventTimeWindows <span class="title">of</span><span class="params">(Time size, Time offset)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> TumblingEventTimeWindows(size.toMilliseconds(), offset.toMilliseconds());</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Session Window：这类窗口通常的使用场景是页面浏览，当两个 session 之间的 gap 大于某个阈值的时候进行计算。</li>
+<li>Global Window：这类窗口通常相当于一个窗口，在实现时调用 windowAll 方法：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PublicEvolving</span></span><br><span class="line">	<span class="keyword">public</span> &lt;W extends Window&gt; <span class="function">AllWindowedStream&lt;T, W&gt; <span class="title">windowAll</span><span class="params">(WindowAssigner&lt;? <span class="keyword">super</span> T, W&gt; assigner)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> AllWindowedStream&lt;&gt;(<span class="keyword">this</span>, assigner);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"><span class="meta">@PublicEvolving</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">AllWindowedStream</span><span class="params">(DataStream&lt;T&gt; input,</span></span></span><br><span class="line"><span class="function"><span class="params">			WindowAssigner&lt;? <span class="keyword">super</span> T, W&gt; windowAssigner)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.input = input.keyBy(<span class="keyword">new</span> NullByteKeySelector&lt;T&gt;());</span><br><span class="line">		<span class="keyword">this</span>.windowAssigner = windowAssigner;</span><br><span class="line">		<span class="keyword">this</span>.trigger = windowAssigner.getDefaultTrigger(input.getExecutionEnvironment());</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="WaterMark-水印机制"><a href="#WaterMark-水印机制" class="headerlink" title="WaterMark 水印机制"></a>WaterMark 水印机制</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;WaterMark 是 flink 为应对 EventTime 的乱序所提出的一种机制，它可以延迟窗口的触发时间，在一定程度上保证延时到来的数据可以进入到相应的时间窗口进行处理，从而保证多次只从同一批数据时所得到的结果是一致的。通常情况下，WaterMark 的生成时在 source 之后，越接近数据源，得到的数据越准确。事实上，WaterMark本身也是一种认为插入的事件，具有相应的时间戳，我们认为，在 WaterMark 到达时，该时间以前的数据已经全部进入相应的窗口内。<br><img src="/images/Flink学习笔记时间定义及窗口机制/watermark.png" width="600" height="450" alt="Flink WaterMark" align=center /></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Flink 中，WaterMark 具有两种不同的实现机制，1. AssignerWithPeriodicWatermarks（周期性），2. AssignerWithPunctuatedWatermarks（伴随着每个最新的事件时间）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AssignerWithPeriodicWatermarks 水印生成实现</span></span><br><span class="line">assignTimestampsAndWatermarks(<span class="keyword">new</span> AssignerWithPeriodicWatermarks&lt;String&gt;() &#123;</span><br><span class="line">            Long currTime = <span class="number">0L</span>;</span><br><span class="line">            <span class="meta">@Nullable</span></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> Watermark <span class="title">getCurrentWatermark</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Watermark(currTime);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">extractTimestamp</span><span class="params">(String element, <span class="keyword">long</span> previousElementTimestamp)</span> </span>&#123;</span><br><span class="line">                String[] values = element.split(<span class="string">" "</span>);</span><br><span class="line">                <span class="keyword">return</span> Long.parseLong(values[<span class="number">1</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">        </span><br><span class="line"><span class="comment">// AssignerWithPunctuatedWatermarks 水印生成实现</span></span><br><span class="line">assignTimestampsAndWatermarks(<span class="keyword">new</span> AssignerWithPunctuatedWatermarks&lt;String&gt;() &#123;</span><br><span class="line">                    <span class="meta">@Nullable</span></span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> Watermark <span class="title">checkAndGetNextWatermark</span><span class="params">(String lastElement, <span class="keyword">long</span> extractedTimestamp)</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">extractTimestamp</span><span class="params">(String element, <span class="keyword">long</span> previousElementTimestamp)</span> </span>&#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;)</span><br></pre></td></tr></table></figure>
+
+<h5 id="使用场景："><a href="#使用场景：" class="headerlink" title="使用场景："></a>使用场景：</h5><ul>
+<li>AssignerWithPeriodicWatermarks：周期性插入时间戳，这种 WaterMark 通常在数据量较大的数据流中使用。</li>
+<li>AssignerWithPunctuatedWatermarks：这种 WaterMark 通常是伴随着每一条数据进入 flink 系统中，在抽取过程中如果携带的 waterMark 小于当前 WaterMark 则不更新，否则更新至较大的 WaterMark 。这种方式不建议在数据流较大的业务中使用，会大大增加系统本身的压力，影响数据处理的性能。</li>
+</ul>
+<h5 id="WarterMark-源码"><a href="#WarterMark-源码" class="headerlink" title="WarterMark 源码"></a>WarterMark 源码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AssignerWithPeriodicWatermarks</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">TimestampAssigner</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Returns the current watermark. This method is periodically called by the</span></span><br><span class="line"><span class="comment">	 * system to retrieve the current watermark. The method may return &#123;<span class="doctag">@code</span> null&#125; to</span></span><br><span class="line"><span class="comment">	 * indicate that no new Watermark is available.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;The returned watermark will be emitted only if it is non-null and its timestamp</span></span><br><span class="line"><span class="comment">	 * is larger than that of the previously emitted watermark (to preserve the contract of</span></span><br><span class="line"><span class="comment">	 * ascending watermarks). If the current watermark is still</span></span><br><span class="line"><span class="comment">	 * identical to the previous one, no progress in event time has happened since</span></span><br><span class="line"><span class="comment">	 * the previous call to this method. If a null value is returned, or the timestamp</span></span><br><span class="line"><span class="comment">	 * of the returned watermark is smaller than that of the last emitted one, then no</span></span><br><span class="line"><span class="comment">	 * new watermark will be generated.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;The interval in which this method is called and Watermarks are generated</span></span><br><span class="line"><span class="comment">	 * depends on &#123;<span class="doctag">@link</span> ExecutionConfig#getAutoWatermarkInterval()&#125;.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> org.apache.flink.streaming.api.watermark.Watermark</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> ExecutionConfig#getAutoWatermarkInterval()</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> Null&#125;, if no watermark should be emitted, or the next watermark to emit.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@Nullable</span></span><br><span class="line">	<span class="function">Watermark <span class="title">getCurrentWatermark</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AssignerWithPunctuatedWatermarks</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">TimestampAssigner</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Asks this implementation if it wants to emit a watermark. This method is called right after</span></span><br><span class="line"><span class="comment">	 * the &#123;<span class="doctag">@link</span> #extractTimestamp(Object, long)&#125; method.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;The returned watermark will be emitted only if it is non-null and its timestamp</span></span><br><span class="line"><span class="comment">	 * is larger than that of the previously emitted watermark (to preserve the contract of</span></span><br><span class="line"><span class="comment">	 * ascending watermarks). If a null value is returned, or the timestamp of the returned</span></span><br><span class="line"><span class="comment">	 * watermark is smaller than that of the last emitted one, then no new watermark will</span></span><br><span class="line"><span class="comment">	 * be generated.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;For an example how to use this method, see the documentation of</span></span><br><span class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> AssignerWithPunctuatedWatermarks this class&#125;.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> Null&#125;, if no watermark should be emitted, or the next watermark to emit.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@Nullable</span></span><br><span class="line">	<span class="function">Watermark <span class="title">checkAndGetNextWatermark</span><span class="params">(T lastElement, <span class="keyword">long</span> extractedTimestamp)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TimestampAssigner</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">Function</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Assigns a timestamp to an element, in milliseconds since the Epoch.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;The method is passed the previously assigned timestamp of the element.</span></span><br><span class="line"><span class="comment">	 * That previous timestamp may have been assigned from a previous assigner,</span></span><br><span class="line"><span class="comment">	 * by ingestion time. If the element did not carry a timestamp before, this value is</span></span><br><span class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> Long.MIN_VALUE&#125;.</span></span><br><span class="line"><span class="comment">	 *</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> element The element that the timestamp will be assigned to.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> previousElementTimestamp The previous internal timestamp of the element,</span></span><br><span class="line"><span class="comment">	 *                                 or a negative value, if no timestamp has been assigned yet.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> The new timestamp.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">long</span> <span class="title">extractTimestamp</span><span class="params">(T element, <span class="keyword">long</span> previousElementTimestamp)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;无论是 AssignerWithPeriodicWatermarks，还是 AssignerWithPunctuatedWatermarks，都继承了 TimestampAssigne 来获取需要的时间戳。</p>
+<ul>
+<li>事实上，对于 EventTime 延迟较小的事件流，使用 WaterMark 机制可以在一定程度上保证数据的完整性，然而当数据的延时较大时，比如，由于某些原因，我们的数据延迟了24小时，这种情况下使用 WaterMark 显然是不合适的，Flink 提供了 allowedLateness 方法进行处理，这里暂时不做介绍。</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;本文简要介绍了 Flink 中的时间机制以及窗口机制，事实上，这两种机制是完全结偶。而 WarterMark 的使用可以最大限度的解决数据流的乱序问题，但同时造成了一定程度的时延。</p>
+
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Chris Liu" />
+            
+              <p class="site-author-name" itemprop="name">Chris Liu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/b658ebdd6b99" title="简书" target="_blank">简书</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-回顾"><span class="nav-number">1.</span> <span class="nav-text">flink 回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-时间定义"><span class="nav-number">2.</span> <span class="nav-text">flink 时间定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#flink-窗口机制"><span class="nav-number">3.</span> <span class="nav-text">flink 窗口机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WaterMark-水印机制"><span class="nav-number">4.</span> <span class="nav-text">WaterMark 水印机制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用场景："><span class="nav-number">4.1.</span> <span class="nav-text">使用场景：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#WarterMark-源码"><span class="nav-number">4.2.</span> <span class="nav-text">WarterMark 源码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Chris Liu</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
