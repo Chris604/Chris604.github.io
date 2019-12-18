@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+  <meta name="google-site-verification" content="true" />
+
+
+
+
+
+
+
+
+  <meta name="baidu-site-verification" content="IpFO2YmkVe" />
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="大数据,Flink,流式,状态," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="回顾&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在之前的学习中我们了解到，flink 作为低延时的流式数据处理框架，本身是有状态的。状态 state 是为了保存一些操作符 operator 的中间结果，同时，通过状态可以保证精确一致语义。 State 分类&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;State 从其实现方式可分为：Keyed State 和 Operator State，从">
+<meta name="keywords" content="大数据,Flink,流式,状态">
+<meta property="og:type" content="article">
+<meta property="og:title" content="flink 学习笔记 — 状态 State">
+<meta property="og:url" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;flink%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E2%80%94%E7%8A%B6%E6%80%81State.html">
+<meta property="og:site_name" content="Chris&#96;s Blog">
+<meta property="og:description" content="回顾&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在之前的学习中我们了解到，flink 作为低延时的流式数据处理框架，本身是有状态的。状态 state 是为了保存一些操作符 operator 的中间结果，同时，通过状态可以保证精确一致语义。 State 分类&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;State 从其实现方式可分为：Keyed State 和 Operator State，从">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记状态State&#x2F;keyby.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记状态State&#x2F;mysu_bj.png">
+<meta property="og:updated_time" content="2019-12-18T08:53:19.488Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;chris-liu.cn&#x2F;images&#x2F;Flink学习笔记状态State&#x2F;keyby.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://chris-liu.cn/flink学习笔记—状态State.html"/>
+
+
+
+
+
+  <title>flink 学习笔记 — 状态 State | Chris`s Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Chris`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">这是一只飞不高的老鸟，但它从未放弃展翅飞翔...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+    
+    
+    <div class="post-block page">
+      <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">flink 学习笔记 — 状态 State</h1>
+
+
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+        
+        
+          <h4 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;在之前的学习中我们了解到，flink 作为低延时的流式数据处理框架，本身是有状态的。状态 state 是为了保存一些操作符 operator 的中间结果，同时，通过状态可以保证精确一致语义。</p>
+<h4 id="State-分类"><a href="#State-分类" class="headerlink" title="State 分类"></a>State 分类</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;State 从其实现方式可分为：Keyed State 和 Operator State，从管理方式可分为：Raw State 和 Managed State。  </p>
+<h5 id="Keyed-State"><a href="#Keyed-State" class="headerlink" title="Keyed State"></a>Keyed State</h5><ul>
+<li>Keyed State 通常是与 keys 相关的，其函数和操作只能在 KeyedStream 中使用。事实上，keyed 与 hive 中的分区极其类似，每一个 key 只能属于某一个 keyed state。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DataStream&lt;Tuple2&lt;String, Integer&gt;&gt; counts =</span><br><span class="line">			text.flatMap(new Tokenizer())</span><br><span class="line">			.keyBy(0)   // 使用 keyby 方法进行划分，不同的 task 之间不会出现相同的 key</span><br><span class="line">			.sum(1);</span><br></pre></td></tr></table></figure>
+<img src="/images/Flink学习笔记状态State/keyby.png" width = "400" height = "150" align=center />
+<center>keyby</center>
+
+<ul>
+<li>如上，有3个并行度的 WordCount 任务，在 keyby 之后，相同的 key 会被划分到相同的 task 中进行处理。</li>
+</ul>
+<h5 id="Operator-State"><a href="#Operator-State" class="headerlink" title="Operator State"></a>Operator State</h5><ul>
+<li>non-keyed state，每一个 operator state 都仅与一个 operator 的实例绑定。  </li>
+<li>常见的 operator state 是 source state，例如记录当前 source 的 offset</li>
+</ul>
+<h5 id="Managed-State"><a href="#Managed-State" class="headerlink" title="Managed State"></a>Managed State</h5><p>&nbsp;&nbsp;&nbsp;&nbsp;Managed State 是由 Flink Runtime 中管理的 State ，并将状态数据转换为 hashtable 或者 RocksDB 的对象进行存储。<br><img src="/images/Flink学习笔记状态State/mysu_bj.png" width = "400" height = "250" align=center /></p>
+<center>State</center>
+
+<ul>
+<li>ValueState：与 key 对应单个的值，在我们统计流式数据中的单词个数时，事实上，状态就是以 ValueState 存在，每次在状态值上进行更新。在其内部，调用 update(T value) 方法进行状态值的更新。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">public interface ValueState&lt;T&gt; extends State &#123;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Returns the current value for the state. When the state is not</span><br><span class="line">	 * partitioned the returned value is the same for all inputs in a given</span><br><span class="line">	 * operator instance. If state partitioning is applied, the value returned</span><br><span class="line">	 * depends on the current operator input, as the operator maintains an</span><br><span class="line">	 * independent state for each partition.</span><br><span class="line">	 *</span><br><span class="line">	 * &lt;p&gt;If you didn&apos;t specify a default value when creating the &#123;@link ValueStateDescriptor&#125;</span><br><span class="line">	 * this will return &#123;@code null&#125; when to value was previously set using &#123;@link #update(Object)&#125;.</span><br><span class="line">	 *</span><br><span class="line">	 * @return The state value corresponding to the current input.</span><br><span class="line">	 *</span><br><span class="line">	 * @throws IOException Thrown if the system cannot access the state.</span><br><span class="line">	 */</span><br><span class="line">	T value() throws IOException;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Updates the operator state accessible by &#123;@link #value()&#125; to the given</span><br><span class="line">	 * value. The next time &#123;@link #value()&#125; is called (for the same state</span><br><span class="line">	 * partition) the returned state will represent the updated value. When a</span><br><span class="line">	 * partitioned state is updated with null, the state for the current key</span><br><span class="line">	 * will be removed and the default value is returned on the next access.</span><br><span class="line">	 *</span><br><span class="line">	 * @param value The new value for the state.</span><br><span class="line">	 *</span><br><span class="line">	 * @throws IOException Thrown if the system cannot access the state.</span><br><span class="line">	 */</span><br><span class="line">	void update(T value) throws IOException;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>ListState：与 key 对应的元素的列表的状态 list，内部定义 update（T）和 addAll（T）两个方法</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public interface ListState&lt;T&gt; extends MergingState&lt;T, Iterable&lt;T&gt;&gt; &#123;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Updates the operator state accessible by &#123;@link #get()&#125; by updating existing values to</span><br><span class="line">	 * to the given list of values. The next time &#123;@link #get()&#125; is called (for the same state</span><br><span class="line">	 * partition) the returned state will represent the updated list.</span><br><span class="line">	 *</span><br><span class="line">	 * &lt;p&gt;If null or an empty list is passed in, the state value will be null.</span><br><span class="line">	 *</span><br><span class="line">	 * @param values The new values for the state.</span><br><span class="line">	 *</span><br><span class="line">	 * @throws Exception The method may forward exception thrown internally (by I/O or functions).</span><br><span class="line">	 */</span><br><span class="line">	void update(List&lt;T&gt; values) throws Exception;</span><br><span class="line"></span><br><span class="line">	/**</span><br><span class="line">	 * Updates the operator state accessible by &#123;@link #get()&#125; by adding the given values</span><br><span class="line">	 * to existing list of values. The next time &#123;@link #get()&#125; is called (for the same state</span><br><span class="line">	 * partition) the returned state will represent the updated list.</span><br><span class="line">	 *</span><br><span class="line">	 * &lt;p&gt;If null or an empty list is passed in, the state value remains unchanged.</span><br><span class="line">	 *</span><br><span class="line">	 * @param values The new values to be added to the state.</span><br><span class="line">	 *</span><br><span class="line">	 * @throws Exception The method may forward exception thrown internally (by I/O or functions).</span><br><span class="line">	 */</span><br><span class="line">	void addAll(List&lt;T&gt; values) throws Exception;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ReducingState：定义与 key 相关的数据元素单个聚合的状态值。</li>
+<li>AggregatingState：定义与 key 相关的数据元素单个聚合的状态值。</li>
+</ul>
+<h5 id="Raw-State"><a href="#Raw-State" class="headerlink" title="Raw State"></a>Raw State</h5><p>&nbsp;&nbsp;&nbsp;&nbsp;Raw State 是由算子本身进行管理的 State ，此时状态都是以字节数组的形式保存到 Checkpoint 中，Flink 并不清楚状态数据的内部结构，每次状态的写入和读取都需要算子进行序列化和反序列化。</p>
+<h4 id="状态管理"><a href="#状态管理" class="headerlink" title="状态管理"></a>状态管理</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;Flink 中状态管理有三种方案：MemoryStateBackend、FSStateBackend、RocksDBStateBackend。</p>
+<h5 id="MemoryStateBackend"><a href="#MemoryStateBackend" class="headerlink" title="MemoryStateBackend"></a>MemoryStateBackend</h5><ul>
+<li>MemoryStateBackend 基于内存的状态管理器，它通常将状态数据存储在 JVM 内存中，包括 Key/State 及窗口中缓存的数据。但是由于内存本身的限制，基于内存的状态管理会造成内存溢出。因此，这种状态管理机制通常在本地测试中使用，生产中禁止使用内存状态管理器。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env.setStateBackend(new MemoryStateBackend());</span><br></pre></td></tr></table></figure>
+<h5 id="FSStateBackend"><a href="#FSStateBackend" class="headerlink" title="FSStateBackend"></a>FSStateBackend</h5><ul>
+<li>FSStateBackend 基于文件的状态管理，和内存管理机制不同，FSStateBackend 通常把状态数据保存在本地文件系统，或者HDFS文件系统中。在初始化时，需要传入文件路径。基于文件的状态管理机制，适用于状态数据很大的数据，此时，如果使用内存状态管理器，很容易就把内存撑爆。通常情况下，为了保证文件状态安全性，会把文件状态保存在 HDFS 中，此时，借助 HDFS 的多副本的策略，保证文件状态不丢失。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">env.setStateBackend(new FsStateBackend(&quot;&quot;));</span><br><span class="line"></span><br><span class="line">// 源码</span><br><span class="line">public FsStateBackend(Path checkpointDataUri) &#123;</span><br><span class="line">		this(checkpointDataUri.toUri());</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="RocksDBStateBackend"><a href="#RocksDBStateBackend" class="headerlink" title="RocksDBStateBackend"></a>RocksDBStateBackend</h5><ul>
+<li>RocksDBStateBackend 基于内存和文件系统的状态管理器，这是基于三方的状态管理器。通常，先把状态放在内存中，等到到达一定的大小时，会将状态数据刷到文件中。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env.setStateBackend(new RocksDBStateBackend(&quot;&quot;));</span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;状态是 Flink 容错机制的基石，了解 State 的机制，可以更好的管理 Checkpoint，更好的进行失败任务的恢复。</p>
+
+        
+      </div>
+      
+      
+      
+    </div>
+    
+    
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Chris Liu" />
+            
+              <p class="site-author-name" itemprop="name">Chris Liu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/b658ebdd6b99" title="简书" target="_blank">简书</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#回顾"><span class="nav-number">1.</span> <span class="nav-text">回顾</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#State-分类"><span class="nav-number">2.</span> <span class="nav-text">State 分类</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Keyed-State"><span class="nav-number">2.1.</span> <span class="nav-text">Keyed State</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Operator-State"><span class="nav-number">2.2.</span> <span class="nav-text">Operator State</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Managed-State"><span class="nav-number">2.3.</span> <span class="nav-text">Managed State</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Raw-State"><span class="nav-number">2.4.</span> <span class="nav-text">Raw State</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#状态管理"><span class="nav-number">3.</span> <span class="nav-text">状态管理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#MemoryStateBackend"><span class="nav-number">3.1.</span> <span class="nav-text">MemoryStateBackend</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FSStateBackend"><span class="nav-number">3.2.</span> <span class="nav-text">FSStateBackend</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#RocksDBStateBackend"><span class="nav-number">3.3.</span> <span class="nav-text">RocksDBStateBackend</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Chris Liu</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
